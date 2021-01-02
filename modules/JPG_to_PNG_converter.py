@@ -1,5 +1,6 @@
 from sys import argv, exit
-import os
+from os.path import join, isdir, isfile, splitext
+from os import getcwd, makedirs, walk, listdir
 import re
 from PIL import Image
 
@@ -31,10 +32,10 @@ def get_verified_path(folder_to_convert):
     path_to_check = (
         folder_to_convert
         if abs_path_pattern.search(folder_to_convert)
-        else os.path.join(os.getcwd(), folder_to_convert.replace("./", ""))
+        else join(getcwd(), folder_to_convert.replace("./", ""))
     )
 
-    if not os.path.isdir(path_to_check):
+    if not isdir(path_to_check):
         print(
             "First arg needs to be folder that contains jpg files.\n"
             + "Please provide absolute folder path or a relative path from current directory"
@@ -43,28 +44,30 @@ def get_verified_path(folder_to_convert):
     return path_to_check
 
 
-def get_list_of_jpg(folder_to_convert):
-    list_of_jpg = []
+def get_list_of_jpg(dir):
     # https://stackoverflow.com/questions/3207219/how-do-i-list-all-files-of-a-directory
     # os.listdir() will get you everything that's in a directory - files and directories.
     # onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
 
-    for (_, _, filenames) in os.walk(folder_to_convert):
-        for filename in filenames:
-            list_of_jpg.append(os.path.join(folder_to_convert, filename))
-        break
+    list_of_jpg = [join(dir, f) for f in listdir(dir) if isfile(join(dir, f))]
+
+    # list_of_jpg = []
+    # for (_, _, filenames) in walk(folder_to_convert):
+    #     for filename in filenames:
+    #         list_of_jpg.append(join(folder_to_convert, filename))
+    #     break
 
     return list_of_jpg
 
 
 def create_new_folder(new_folder_name):
-    new_folder = os.path.join(os.getcwd(), new_folder_name)
+    new_folder = join(getcwd(), new_folder_name)
 
-    if os.path.isdir(new_folder):
+    if isdir(new_folder):
         return new_folder
 
     try:
-        os.makedirs(new_folder)
+        makedirs(new_folder)
         return new_folder
     except OSError:
         return None
@@ -77,9 +80,12 @@ def convert_files_to_png(list_of_jpg, new_folder_name):
         counter = 0
         for jpg_path in list_of_jpg:
             jpg = Image.open(jpg_path)
-            jpg_name = filename_pattern.findall(jpg_path)
-            jpg.save(os.path.join(new_folder_name, f"converted_{jpg_name[0]}.png"))
-            print(f"{jpg_name[0]} file was converted")
+            clean_name = filename_pattern.findall(jpg_path)[0]
+            # splitext returns a tuple where index 0 is the filepath up to the filename .
+            # second index is going to be the file extension, .e.g. ".jpg"
+            # clean_name = splitext(jpg_path)[0]
+            jpg.save(f"{new_folder_name}/converted_{clean_name}.png")
+            print(f"{clean_name} file was converted")
             counter += 1
         return counter
     except:
