@@ -29,10 +29,12 @@ def get_input_args(args):
 def get_verified_path(folder_to_convert):
     abs_path_pattern = re.compile(r"^/Users")
 
+    # untested change
     path_to_check = (
         folder_to_convert
         if abs_path_pattern.search(folder_to_convert)
-        else join(getcwd(), folder_to_convert.replace("./", ""))
+        # else join(getcwd(), folder_to_convert.replace("./", ""))
+        else folder_to_convert
     )
 
     if not isdir(path_to_check):
@@ -61,7 +63,9 @@ def get_list_of_jpg(dir):
 
 
 def create_new_folder(new_folder_name):
-    new_folder = join(getcwd(), new_folder_name)
+    # untested change
+    # new_folder = join(getcwd(), new_folder_name)
+    new_folder = new_folder_name
 
     if isdir(new_folder):
         return new_folder
